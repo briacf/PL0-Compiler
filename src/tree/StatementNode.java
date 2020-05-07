@@ -481,12 +481,20 @@ public abstract class StatementNode {
             return id;
         }
 
-        public ExpNode getCondition() {
-            return condition;
+        public ExpNode getCondition1() {
+            return condition1;
         }
 
-        public void setCondition(ExpNode cond) {
-            this.condition = cond;
+        public ExpNode getCondition2() {
+            return condition1;
+        }
+
+        public void setCondition1(ExpNode cond) {
+            this.condition1 = cond;
+        }
+
+        public void setCondition2(ExpNode cond) {
+            this.condition2 = cond;
         }
 
         public StatementNode getLoopStmt() {
@@ -495,7 +503,7 @@ public abstract class StatementNode {
 
         @Override
         public String toString(int level) {
-            return "FOR " + condition.toString() + " DO" +
+            return "FOR " + id + condition1.toString() + ".." + condition2.toString() + " DO" +
                     newLine(level + 1) + loopStmt.toString(level + 1);
         }
     }

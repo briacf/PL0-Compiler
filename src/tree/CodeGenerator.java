@@ -231,24 +231,8 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
 
     public Code visitForNode(StatementNode.ForNode node) {
         beginGen("For");
-        /* Generate the code to evaluate the condition. */
-        Code code = node.getCondition().genCode(this);
-        /* Generate the code for the loop body */
-        Code bodyCode = node.getLoopStmt().genCode(this);
-        /* Add a branch over the loop body on false.
-         * The offset is the size of the loop body code plus
-         * the size of the branch to follow the body.
-         */
-        code.genJumpIfFalse(bodyCode.size() + Code.SIZE_JUMP_ALWAYS);
-        /* Append the code for the body */
-        code.append(bodyCode);
-        /* Add a branch back to the condition.
-         * The offset is the total size of the current code plus the
-         * size of a Jump Always (being generated).
-         */
-        code.genJumpAlways(-(code.size() + Code.SIZE_JUMP_ALWAYS));
         endGen("For");
-        return code;
+        return null;
     }
     //************* Expression node code generation visit methods
 
