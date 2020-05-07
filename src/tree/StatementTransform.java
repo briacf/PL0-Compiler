@@ -1,5 +1,7 @@
 package tree;
 
+import java.sql.Statement;
+
 /**
  * interface StatementVisitor - Provides the interface for the visitor pattern
  * to be applied to an abstract syntax tree node for a statement.
@@ -29,4 +31,5 @@ public interface StatementTransform<ResultType> {
 
     ResultType visitWhileNode(StatementNode.WhileNode node);
 
+    ResultType visitForNode(StatementNode.ForNode node);
 }

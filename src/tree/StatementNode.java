@@ -447,5 +447,57 @@ public abstract class StatementNode {
                     newLine(level + 1) + loopStmt.toString(level + 1);
         }
     }
+
+    /**
+     * Tree node representing a "for" statement.
+     */
+    public static class ForNode extends StatementNode {
+        private final String id;
+        private ExpNode condition1;
+        private ExpNode condition2;
+        private final StatementNode loopStmt;
+
+        public ForNode(Location loc, String id,
+                       ExpNode condition1, ExpNode condition2,
+                       StatementNode loopStmt) {
+            super(loc);
+            this.id = id;
+            this.condition1 = condition1;
+            this.condition2 = condition2;
+            this.loopStmt = loopStmt;
+        }
+
+        @Override
+        public void accept(StatementVisitor visitor) {
+            visitor.visitForNode(this);
+        }
+
+        @Override
+        public Code genCode(StatementTransform<Code> visitor) {
+            return visitor.visitForNode(this);
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public ExpNode getCondition() {
+            return condition;
+        }
+
+        public void setCondition(ExpNode cond) {
+            this.condition = cond;
+        }
+
+        public StatementNode getLoopStmt() {
+            return loopStmt;
+        }
+
+        @Override
+        public String toString(int level) {
+            return "FOR " + condition.toString() + " DO" +
+                    newLine(level + 1) + loopStmt.toString(level + 1);
+        }
+    }
 }
 
