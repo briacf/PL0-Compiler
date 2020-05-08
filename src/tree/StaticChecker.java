@@ -238,10 +238,9 @@ public class StaticChecker implements DeclVisitor, StatementVisitor,
      */
     public void visitForNode(StatementNode.ForNode node) {
         beginCheck("For");
-        // Check the condition and replace with (possibly) transformed node
-        node.setCondition1(checkCondition(node.getCondition1()));
-        node.setCondition2(checkCondition(node.getCondition2()));
-        node.getLoopStmt().accept(this);  // Check the body of the loop
+        for (StatementNode stmnt:node.getLoopStmts()) {
+            stmnt.accept(this);
+        }
         endCheck("For");
     }
 

@@ -1,10 +1,12 @@
 package tree;
 
+import java.sql.Statement;
 import java.util.*;
 
 import java_cup.runtime.ComplexSymbolFactory.Location;
 import syms.Scope;
 import syms.SymEntry;
+import syms.Type;
 
 /**
  * class StatementNode - Abstract syntax tree representation of statements.
@@ -453,17 +455,15 @@ public abstract class StatementNode {
      */
     public static class ForNode extends StatementNode {
         private final String id;
-        private ExpNode condition1;
-        private ExpNode condition2;
-        private final StatementNode loopStmt;
+        private Type.SubrangeType subrange;
+        private List<StatementNode> loopStmt;
 
         public ForNode(Location loc, String id,
-                       ExpNode condition1, ExpNode condition2,
-                       StatementNode loopStmt) {
+                       Type.SubrangeType subrange,
+                       List<StatementNode> loopStmt) {
             super(loc);
             this.id = id;
-            this.condition1 = condition1;
-            this.condition2 = condition2;
+            this.subrange = subrange;
             this.loopStmt = loopStmt;
         }
 
@@ -481,30 +481,14 @@ public abstract class StatementNode {
             return id;
         }
 
-        public ExpNode getCondition1() {
-            return condition1;
-        }
-
-        public ExpNode getCondition2() {
-            return condition1;
-        }
-
-        public void setCondition1(ExpNode cond) {
-            this.condition1 = cond;
-        }
-
-        public void setCondition2(ExpNode cond) {
-            this.condition2 = cond;
-        }
-
-        public StatementNode getLoopStmt() {
+        public List<StatementNode> getLoopStmts() {
             return loopStmt;
         }
 
         @Override
         public String toString(int level) {
-            return "FOR " + id + condition1.toString() + ".." + condition2.toString() + " DO" +
-                    newLine(level + 1) + loopStmt.toString(level + 1);
+            return "FOR " + id + subrange.toString() + " DO" +
+                    newLine(level + 1) + loopStmt.get(0).toString(level + 1);
         }
     }
 }
