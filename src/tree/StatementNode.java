@@ -454,14 +454,17 @@ public abstract class StatementNode {
      * Tree node representing a "for" statement.
      */
     public static class ForNode extends StatementNode {
-        private final String id;
+        private Location loc;
+        private ExpNode id;
+        private ExpNode condition;
         private Type.SubrangeType subrange;
         private List<StatementNode> loopStmt;
 
-        public ForNode(Location loc, String id,
+        public ForNode(Location loc, ExpNode id,
                        Type.SubrangeType subrange,
                        List<StatementNode> loopStmt) {
             super(loc);
+            this.loc = loc;
             this.id = id;
             this.subrange = subrange;
             this.loopStmt = loopStmt;
@@ -477,8 +480,16 @@ public abstract class StatementNode {
             return visitor.visitForNode(this);
         }
 
-        public String getId() {
+        public ExpNode getId() {
             return id;
+        }
+
+        public void setId(ExpNode id) { this.id = id; }
+
+        public Type.SubrangeType getSubrange() { return subrange; }
+
+        public ExpNode getValue() {
+            return new ExpNode.ConstNode(loc, subrange.getBaseType(), subrange.getLower());
         }
 
         public List<StatementNode> getLoopStmts() {

@@ -231,8 +231,30 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
 
     public Code visitForNode(StatementNode.ForNode node) {
         beginGen("For");
+
+        // Code to initialize id variable to lowest subrange value
+        Code code = node.getValue().genCode(this);
+        /* Generate the code to load the address of the variable */
+        code.append(node.getId().genCode(this));
+        /* Generate the store based on the type/size of value */
+        code.genStore(node.getSubrange().getBaseType());
+
+
+        // Condition, is id smaller than end of subrange
+
+        // Body of the loop, executed if condition holds
+        Code bodyCode = new Code();
+        for (StatementNode s : node.getLoopStmts()) {
+            bodyCode.append(s.genCode(this));
+        }
+
+        //Code to increment id after one pass of the loop
+
+
+        code.append(bodyCode);
+
         endGen("For");
-        return null;
+        return code;
     }
     //************* Expression node code generation visit methods
 

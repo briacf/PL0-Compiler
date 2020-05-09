@@ -331,6 +331,11 @@ Type ::= TypeIdentifier:type
         {:
             RESULT = new Type.SubrangeType(subrxleft, lo, hi);
         :}
+    |  LCURLY:subr
+       {:
+
+          RESULT = null;
+       :}
     | error:err
         {:
             RESULT = Type.ERROR_TYPE;
@@ -430,8 +435,9 @@ Statement ::= KW_WHILE Condition:c KW_DO Statement:s
         {: 
             RESULT = new StatementNode.WhileNode(cxleft, c, s);
         :}
-    |  KW_FOR IDENTIFIER:id COLON Constant:lo RANGE Constant:up KW_DO StatementList:s KW_OD
+    |  KW_FOR IDENTIFIER:ident COLON Constant:lo RANGE Constant:up KW_DO StatementList:s KW_OD
         {:
+            ExpNode id = new ExpNode.IdentifierNode(identxleft, ident);
             Type.SubrangeType subrange = new Type.SubrangeType(loxleft, lo, up);
             RESULT = new StatementNode.ForNode(loxleft, id, subrange, s);
         :}
@@ -454,7 +460,7 @@ Statement ::= KW_WHILE Condition:c KW_DO Statement:s
     |  LValue:lval ASSIGN Condition:rval
        {:
           RESULT = new StatementNode.AssignmentNode(lvalxleft, lval, rval);
-       :} 
+       :}
     |  KW_CALL IDENTIFIER:id LPAREN ActualParamList:pl RPAREN
         {: 
             RESULT = new StatementNode.CallNode(idxleft, id);

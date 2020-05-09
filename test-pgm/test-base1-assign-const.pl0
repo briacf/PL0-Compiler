@@ -8,7 +8,7 @@ const
     h = i;       // circular definition
     i = j;       // circular definition
     j = --g;     // circular definition
-var 
+var
     x: int;
 begin
 	x := c;

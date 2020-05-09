@@ -238,9 +238,25 @@ public class StaticChecker implements DeclVisitor, StatementVisitor,
      */
     public void visitForNode(StatementNode.ForNode node) {
         beginCheck("For");
-        for (StatementNode stmnt:node.getLoopStmts()) {
-            stmnt.accept(this);
+
+        // Add the control variable to the current scope
+        ExpNode id = node.getId();
+        Type.SubrangeType subrange = node.getSubrange();
+        subrange.resolveType();
+        Type.ReferenceType ref = new Type.ReferenceType(id.getLocation(), subrange.getBaseType());
+        currentScope.addVariable("i", id.getLocation(), ref);
+
+        ExpNode control = node.getId().transform(this);
+        node.setId(control);
+
+
+
+
+
+        for (StatementNode s:node.getLoopStmts()) {
+            s.accept(this);
         }
+
         endCheck("For");
     }
 
