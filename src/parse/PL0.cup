@@ -151,6 +151,7 @@ non terminal                  TypeDefSeq,
                               TypeDef;
 non terminal Type             Type,
                               TypeIdentifier;
+non terminal List<Type.EnumerationElement> EnumerationList;
 non terminal                  VarDeclSeq, 
                               VarDecl;
 non terminal DeclNode.ProcedureNode  ProcedureDef;
@@ -323,6 +324,18 @@ TypeDef ::= IDENTIFIER:id EQUALS Type:type SEMICOLON
     |  error 
     ;
 
+EnumerationList ::=IDENTIFIER:id
+        {:
+            RESULT = new ArrayList<Type.EnumerationElement>();
+            RESULT.add(new Type.EnumerationElement(id, idxleft));
+        :}
+    |  EnumerationList:li COMMA IDENTIFIER:id
+        {:
+            li.add(new Type.EnumerationElement(id, idxleft));
+            RESULT = li;
+        :}
+    ;
+
 Type ::= TypeIdentifier:type
         {: 
             RESULT = type;
@@ -331,10 +344,9 @@ Type ::= TypeIdentifier:type
         {:
             RESULT = new Type.SubrangeType(subrxleft, lo, hi);
         :}
-    |  LCURLY:subr
+    |  LCURLY:enm EnumerationList:li RCURLY
        {:
-
-          RESULT = null;
+            RESULT = new Type.EnumerationType(enmxleft, li, currentScope);
        :}
     | error:err
         {:
@@ -439,7 +451,7 @@ Statement ::= KW_WHILE Condition:c KW_DO Statement:s
         {:
             ExpNode id = new ExpNode.IdentifierNode(identxleft, ident);
             Type.SubrangeType subrange = new Type.SubrangeType(loxleft, lo, up);
-            RESULT = new StatementNode.ForNode(loxleft, id, subrange, s);
+            RESULT = new StatementNode.ForNode(loxleft, ident, id, subrange, s);
         :}
     |  KW_IF Condition:c KW_THEN Statement:s1 KW_ELSE Statement:s2
         {: 

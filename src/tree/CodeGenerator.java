@@ -232,26 +232,38 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
     public Code visitForNode(StatementNode.ForNode node) {
         beginGen("For");
 
+        Type.SubrangeType subrange = node.getSubrange();
+
         // Code to initialize id variable to lowest subrange value
-        Code code = node.getValue().genCode(this);
-        /* Generate the code to load the address of the variable */
+        Code code = node.getMin().genCode(this);
         code.append(node.getId().genCode(this));
-        /* Generate the store based on the type/size of value */
-        code.genStore(node.getSubrange().getBaseType());
+        code.genStore(subrange.getBaseType());
 
-
-        // Condition, is id smaller than end of subrange
+        // Generate code for for loop condition
+        code.append(node.getCondition().genCode(this));
 
         // Body of the loop, executed if condition holds
         Code bodyCode = new Code();
         for (StatementNode s : node.getLoopStmts()) {
             bodyCode.append(s.genCode(this));
+
+            // Create a binary expression node to increment the control variable
+            ExpNode.ConstNode increase = new ExpNode.ConstNode(node.getLocation(), subrange.getBaseType(), 1);
+            ExpNode.BinaryNode increment = new ExpNode.BinaryNode(node.getId().getLocation(), Operator.ADD_OP, node.getId(), increase);
+
+            System.out.println(increment.toString());
+            bodyCode.append(increment.genCode(this));
+            bodyCode.append(node.getId().genCode(this));
+            bodyCode.genStore(subrange.getBaseType());
         }
 
-        //Code to increment id after one pass of the loop
-
+        // Exit for loop control variable larger than subrange max
+        code.genJumpIfFalse(bodyCode.size() + Code.SIZE_JUMP_ALWAYS);
 
         code.append(bodyCode);
+
+        // Always loop back
+        code.genJumpAlways(-(code.size() + Code.SIZE_JUMP_ALWAYS));
 
         endGen("For");
         return code;

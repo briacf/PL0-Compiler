@@ -244,14 +244,15 @@ public class StaticChecker implements DeclVisitor, StatementVisitor,
         Type.SubrangeType subrange = node.getSubrange();
         subrange.resolveType();
         Type.ReferenceType ref = new Type.ReferenceType(id.getLocation(), subrange.getBaseType());
-        currentScope.addVariable("i", id.getLocation(), ref);
+        currentScope.addVariable(node.getControlName(), id.getLocation(), ref);
 
+        // Create condition for the for loop to end
+        ExpNode cond = new ExpNode.BinaryNode(id.getLocation(), Operator.GREATER_OP, node.getMax(), id);
+        node.setCondition(checkCondition(cond));
+
+        // Transform control variable
         ExpNode control = node.getId().transform(this);
         node.setId(control);
-
-
-
-
 
         for (StatementNode s:node.getLoopStmts()) {
             s.accept(this);

@@ -455,16 +455,19 @@ public abstract class StatementNode {
      */
     public static class ForNode extends StatementNode {
         private Location loc;
+        private String controlName;
         private ExpNode id;
         private ExpNode condition;
+        private ExpNode increment;
         private Type.SubrangeType subrange;
         private List<StatementNode> loopStmt;
 
-        public ForNode(Location loc, ExpNode id,
+        public ForNode(Location loc, String ident, ExpNode id,
                        Type.SubrangeType subrange,
                        List<StatementNode> loopStmt) {
             super(loc);
             this.loc = loc;
+            this.controlName = ident;
             this.id = id;
             this.subrange = subrange;
             this.loopStmt = loopStmt;
@@ -480,6 +483,8 @@ public abstract class StatementNode {
             return visitor.visitForNode(this);
         }
 
+        public String getControlName() { return controlName; }
+
         public ExpNode getId() {
             return id;
         }
@@ -488,8 +493,28 @@ public abstract class StatementNode {
 
         public Type.SubrangeType getSubrange() { return subrange; }
 
-        public ExpNode getValue() {
+        public ExpNode getMin() {
             return new ExpNode.ConstNode(loc, subrange.getBaseType(), subrange.getLower());
+        }
+
+        public ExpNode getMax() {
+            return new ExpNode.ConstNode(loc, subrange.getBaseType(), subrange.getUpper());
+        }
+
+        public ExpNode getCondition() {
+            return condition;
+        }
+
+        public void setCondition(ExpNode cond) {
+            this.condition = cond;
+        }
+
+        public ExpNode getIncrement() {
+            return increment;
+        }
+
+        public void setIncrement(ExpNode incr) {
+            this.increment = incr;
         }
 
         public List<StatementNode> getLoopStmts() {
