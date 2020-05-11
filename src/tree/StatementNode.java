@@ -459,17 +459,19 @@ public abstract class StatementNode {
         private ExpNode id;
         private ExpNode condition;
         private ExpNode increment;
-        private Type.SubrangeType subrange;
+        private ExpNode min;
+        private ExpNode max;
         private List<StatementNode> loopStmt;
 
         public ForNode(Location loc, String ident, ExpNode id,
-                       Type.SubrangeType subrange,
+                       ExpNode min, ExpNode max,
                        List<StatementNode> loopStmt) {
             super(loc);
             this.loc = loc;
             this.controlName = ident;
             this.id = id;
-            this.subrange = subrange;
+            this.min = min;
+            this.max = max;
             this.loopStmt = loopStmt;
         }
 
@@ -491,15 +493,13 @@ public abstract class StatementNode {
 
         public void setId(ExpNode id) { this.id = id; }
 
-        public Type.SubrangeType getSubrange() { return subrange; }
+        public ExpNode getMin() { return min; }
 
-        public ExpNode getMin() {
-            return new ExpNode.ConstNode(loc, subrange.getBaseType(), subrange.getLower());
-        }
+        public void setMin(ExpNode min) { this.min = min; }
 
-        public ExpNode getMax() {
-            return new ExpNode.ConstNode(loc, subrange.getBaseType(), subrange.getUpper());
-        }
+        public ExpNode getMax() { return max; }
+
+        public void setMax(ExpNode max) { this.max = max; }
 
         public ExpNode getCondition() {
             return condition;
@@ -509,8 +509,8 @@ public abstract class StatementNode {
             this.condition = cond;
         }
 
-        public ExpNode getIncrement() {
-            return increment;
+        public ExpNode.BinaryNode getIncrement() {
+            return (ExpNode.BinaryNode)increment;
         }
 
         public void setIncrement(ExpNode incr) {
@@ -523,8 +523,9 @@ public abstract class StatementNode {
 
         @Override
         public String toString(int level) {
-            return "FOR " + id + subrange.toString() + " DO" +
-                    newLine(level + 1) + loopStmt.get(0).toString(level + 1);
+            return "FOR " + id + ": " + min.toString() + " .. "
+                    + max.toString() + " DO" + newLine(level + 1)
+                    + loopStmt.get(0).toString(level + 1);
         }
     }
 }

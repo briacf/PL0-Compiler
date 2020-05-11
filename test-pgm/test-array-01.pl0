@@ -16,7 +16,7 @@ begin
   // i = 0
   while i < N do
   begin
-    i := i + 1;
-    write vec[i]
+    i := i + 1
+    // write vec[i]
   end
 end

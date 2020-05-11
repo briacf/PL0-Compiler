@@ -232,29 +232,26 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
     public Code visitForNode(StatementNode.ForNode node) {
         beginGen("For");
 
-        Type.SubrangeType subrange = node.getSubrange();
-
         // Code to initialize id variable to lowest subrange value
-        Code code = node.getMin().genCode(this);
-        code.append(node.getId().genCode(this));
-        code.genStore(subrange.getBaseType());
+        Code assignment = node.getMin().genCode(this);
+        assignment.append(node.getId().genCode(this));
+        assignment.genStore(node.getMin().getType());
 
         // Generate code for for loop condition
-        code.append(node.getCondition().genCode(this));
+        Code code = node.getCondition().genCode(this);
 
         // Body of the loop, executed if condition holds
         Code bodyCode = new Code();
         for (StatementNode s : node.getLoopStmts()) {
             bodyCode.append(s.genCode(this));
 
-            // Create a binary expression node to increment the control variable
-            ExpNode.ConstNode increase = new ExpNode.ConstNode(node.getLocation(), subrange.getBaseType(), 1);
-            ExpNode.BinaryNode increment = new ExpNode.BinaryNode(node.getId().getLocation(), Operator.ADD_OP, node.getId(), increase);
+            // Generate the code used to increment the control variable
+            Code incr = genArgs(node.getIncrement().getLeft(), node.getIncrement().getRight());
+            incr.generateOp(Operation.ADD);
 
-            System.out.println(increment.toString());
-            bodyCode.append(increment.genCode(this));
+            bodyCode.append(incr);
             bodyCode.append(node.getId().genCode(this));
-            bodyCode.genStore(subrange.getBaseType());
+            bodyCode.genStore(node.getMin().getType());
         }
 
         // Exit for loop control variable larger than subrange max
@@ -265,8 +262,9 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
         // Always loop back
         code.genJumpAlways(-(code.size() + Code.SIZE_JUMP_ALWAYS));
 
+        assignment.append(code);
         endGen("For");
-        return code;
+        return assignment;
     }
     //************* Expression node code generation visit methods
 

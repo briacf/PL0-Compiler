@@ -239,24 +239,53 @@ public class StaticChecker implements DeclVisitor, StatementVisitor,
     public void visitForNode(StatementNode.ForNode node) {
         beginCheck("For");
 
+        currentScope = currentScope.extendCurrentScope();
+
         // Add the control variable to the current scope
         ExpNode id = node.getId();
-        Type.SubrangeType subrange = node.getSubrange();
-        subrange.resolveType();
-        Type.ReferenceType ref = new Type.ReferenceType(id.getLocation(), subrange.getBaseType());
-        currentScope.addVariable(node.getControlName(), id.getLocation(), ref);
+        ExpNode min = node.getMin();
+        ExpNode max = node.getMax();
+
+        Type.ReferenceType ref = new Type.ReferenceType(id.getLocation(), min.getType());
+        currentScope.addVariable(node.getControlName(), id.getLocation(), ref).setReadOnly(true);
 
         // Create condition for the for loop to end
-        ExpNode cond = new ExpNode.BinaryNode(id.getLocation(), Operator.GREATER_OP, node.getMax(), id);
+        ExpNode cond = new ExpNode.BinaryNode(id.getLocation(), Operator.GEQUALS_OP,
+                node.getMax(), id);
         node.setCondition(checkCondition(cond));
 
-        // Transform control variable
-        ExpNode control = node.getId().transform(this);
-        node.setId(control);
+        ExpNode one = new ExpNode.ConstNode(id.getLocation(), min.getType(), 1);
+        one = one.transform(this);
+
+        // Transform for node values
+        id = id.transform(this);
+        node.setId(id);
+
+        min = min.transform(this);
+        node.setMin(min);
+
+        max = max.transform(this);
+        node.setMax(min);
+
+        // Create an ADD operation so the control variable can be incremented after each loop
+        ExpNode.BinaryNode incr = new ExpNode.BinaryNode(id.getLocation(),
+                Operator.ADD_OP, id, one);
+
+        Type opType = currentScope.lookupOperator(incr.getOp().getName()).getType();
+        Type.FunctionType fType = ((Type.OperatorType)opType).opType();
+        List<Type> argTypes = ((Type.ProductType)fType.getArgType()).getTypes();
+        incr.setLeft(argTypes.get(0).coerceExp(id));
+        incr.setRight(argTypes.get(1).coerceExp(one));
+        incr.setType(fType.getResultType());
+        incr.setOp(((Type.OperatorType)opType).getOperator());
+
+        node.setIncrement(incr);
 
         for (StatementNode s:node.getLoopStmts()) {
             s.accept(this);
         }
+
+        currentScope = currentScope.getParent();
 
         endCheck("For");
     }

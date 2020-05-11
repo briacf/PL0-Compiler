@@ -348,6 +348,10 @@ Type ::= TypeIdentifier:type
        {:
             RESULT = new Type.EnumerationType(enmxleft, li, currentScope);
        :}
+    | KW_ARRAY Type:t1 KW_OF Type:t2
+        {:
+            RESULT = new Type.ArrayType(t1xleft, t1, t2);
+        :}
     | error:err
         {:
             RESULT = Type.ERROR_TYPE;
@@ -447,11 +451,11 @@ Statement ::= KW_WHILE Condition:c KW_DO Statement:s
         {: 
             RESULT = new StatementNode.WhileNode(cxleft, c, s);
         :}
-    |  KW_FOR IDENTIFIER:ident COLON Constant:lo RANGE Constant:up KW_DO StatementList:s KW_OD
+    |  KW_FOR IDENTIFIER:ident COLON Condition:lo RANGE Condition:up KW_DO StatementList:s KW_OD
         {:
             ExpNode id = new ExpNode.IdentifierNode(identxleft, ident);
-            Type.SubrangeType subrange = new Type.SubrangeType(loxleft, lo, up);
-            RESULT = new StatementNode.ForNode(loxleft, ident, id, subrange, s);
+
+            RESULT = new StatementNode.ForNode(identxleft, ident, id, lo, up, s);
         :}
     |  KW_IF Condition:c KW_THEN Statement:s1 KW_ELSE Statement:s2
         {: 
@@ -496,6 +500,10 @@ LValue ::= IDENTIFIER:id
              */
             RESULT = new ExpNode.IdentifierNode(idxleft, id);
         :}
+    |  LValue:lval LBRACKET Condition:index RBRACKET
+        {:
+            RESULT = null;
+        :}
     | error:e
         {:
             RESULT = new ExpNode.ErrorNode(exleft);
@@ -516,7 +524,7 @@ RelCondition ::= Exp:e
     |  Exp:e1 Relation:op Exp:e2
         {:
             RESULT = new ExpNode.BinaryNode(opxleft, op, e1,e2);
-        :} 
+        :}
     ;
 
 Relation ::= EQUALS
