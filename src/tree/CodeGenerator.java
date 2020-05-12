@@ -123,12 +123,15 @@ public class CodeGenerator implements DeclVisitor, StatementTransform<Code>,
      */
     public Code visitAssignmentNode(StatementNode.AssignmentNode node) {
         beginGen("Assignment");
+
         /* Generate code to evaluate the expression */
         Code code = node.getExp().genCode(this);
         /* Generate the code to load the address of the variable */
         code.append(node.getVariable().genCode(this));
         /* Generate the store based on the type/size of value */
         code.genStore(node.getExp().getType());
+
+
         endGen("Assignment");
         return code;
     }

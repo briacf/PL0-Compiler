@@ -162,6 +162,11 @@ public abstract class StatementNode {
          * Tree node for the expression to be assigned.
          */
         private ExpNode exp;
+        /*
+         * Boolean set to true if variable is read-only
+         */
+        private Boolean readOnly = false;
+
 
         public AssignmentNode(Location loc, ExpNode variable, ExpNode exp) {
             super(loc);
@@ -194,6 +199,10 @@ public abstract class StatementNode {
         public void setExp(ExpNode exp) {
             this.exp = exp;
         }
+
+        public Boolean getReadOnly() { return readOnly; }
+
+        public void setReadOnly(Boolean readOnly) { this.readOnly = readOnly; }
 
         String getVariableName() {
             if (lValue instanceof ExpNode.VariableNode) {

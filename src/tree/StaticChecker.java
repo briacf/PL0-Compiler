@@ -118,23 +118,32 @@ public class StaticChecker implements DeclVisitor, StatementVisitor,
      */
     public void visitAssignmentNode(StatementNode.AssignmentNode node) {
         beginCheck("Assignment");
+
         // Check the left side left value.
         ExpNode left = node.getVariable().transform(this);
         node.setVariable(left);
-        // Check the right side expression.
-        ExpNode exp = node.getExp().transform(this);
-        node.setExp(exp);
-        // Validate that it is a true left value and not a constant
-        if (left.getType() instanceof Type.ReferenceType) {
-            /* Validate that the right side expression is assignment
-             * compatible with the left value. This requires that the
-             * right side expression is coerced to the base type of
-             * type of the left side LValue. */
-            Type baseType = ((Type.ReferenceType) left.getType()).getBaseType();
-            node.setExp(baseType.coerceExp(exp));
-        } else if (left.getType() != Type.ERROR_TYPE) {
+
+        // Check if the variable is not read-only
+        if (!currentScope.lookupVariable(node.getVariableName()).isReadOnly()) {
+            // Check the right side expression.
+            ExpNode exp = node.getExp().transform(this);
+            node.setExp(exp);
+            // Validate that it is a true left value and not a constant
+            if (left.getType() instanceof Type.ReferenceType) {
+                /* Validate that the right side expression is assignment
+                 * compatible with the left value. This requires that the
+                 * right side expression is coerced to the base type of
+                 * type of the left side LValue. */
+                Type baseType = ((Type.ReferenceType) left.getType()).getBaseType();
+                node.setExp(baseType.coerceExp(exp));
+            } else if (left.getType() != Type.ERROR_TYPE) {
                 staticError("variable expected", left.getLocation());
+            }
+        } else {
+            staticError("variable " + node.getVariableName()
+                    + " is read-only", left.getLocation());
         }
+
         endCheck("Assignment");
     }
 
